@@ -1,0 +1,28 @@
+{
+  "name": "hikari",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/maomaomaomao8/hikari.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/maomaomaomao8/hikari/issues"
+  },
+  "homepage": "https://github.com/maomaomaomao8/hikari#readme",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.110.0",
+    "mapbox-gl": "^3.25.0",
+    "vite": "^8.1.2"
+  }
+}

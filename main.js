@@ -82,70 +82,7 @@ map.on('style.load', () => {
     'star-intensity': 0.4,
   });
 
-  addDayNightLayer();
 });
-
-function addDayNightLayer() {
-  const now = new Date();
-  const dayOfYear = Math.floor(
-    (now - new Date(now.getFullYear(), 0, 0)) / 86400000
-  );
-  const declination = -23.44 * Math.cos((360 / 365) * (dayOfYear + 10) * (Math.PI / 180));
-  const hourUTC = now.getUTCHours() + now.getUTCMinutes() / 60;
-  const subsolarLng = (12 - hourUTC) * 15;
-
-  const coords = buildTerminatorPolygon(declination, subsolarLng);
-
-  map.addSource('night', {
-    type: 'geojson',
-    data: {
-      type: 'Feature',
-      geometry: { type: 'Polygon', coordinates: [coords] },
-    },
-  });
-
-  map.addLayer({
-    id: 'night-layer',
-    type: 'fill',
-    source: 'night',
-    paint: {
-      'fill-color': '#000010',
-      'fill-opacity': 0.35,
-    },
-  });
-}
-
-function buildTerminatorPolygon(declination, subsolarLng) {
-  const decRad = declination * (Math.PI / 180);
-  const points = [];
-
-  for (let i = 0; i <= 360; i++) {
-    const lngOffset = i - 180;
-    const lng = subsolarLng + lngOffset;
-    const lat =
-      Math.atan(
-        -Math.cos((lngOffset * Math.PI) / 180) / Math.tan(decRad)
-      ) * (180 / Math.PI);
-    points.push([normLng(lng), lat]);
-  }
-
-  const nightSide = declination >= 0 ? -90 : 90;
-  const polygon = [];
-  polygon.push([normLng(subsolarLng - 180), nightSide]);
-  for (let i = points.length - 1; i >= 0; i--) {
-    polygon.push(points[i]);
-  }
-  polygon.push([normLng(subsolarLng + 180), nightSide]);
-  polygon.push([normLng(subsolarLng - 180), nightSide]);
-
-  return polygon;
-}
-
-function normLng(lng) {
-  while (lng > 180) lng -= 360;
-  while (lng < -180) lng += 360;
-  return lng;
-}
 
 function rotate() {
   if (rotating) {

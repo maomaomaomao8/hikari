@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Hikari</title>
   <link href="https://api.mapbox.com/mapbox-gl-js/v3.12.0/mapbox-gl.css" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400&display=swap" rel="stylesheet">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     html, body { width: 100%; height: 100%; overflow: hidden; background: #0a0a0f; }
@@ -15,36 +16,38 @@
       left: 50%;
       transform: translateX(-50%);
       z-index: 10;
+      min-width: 220px;
+      padding: 14px 32px;
       background: rgba(255, 255, 255, 0.12);
       color: rgba(255, 255, 255, 0.8);
       border: 1px solid rgba(255, 255, 255, 0.2);
       border-radius: 999px;
-      padding: 12px 28px;
       font: 14px/1 -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
       cursor: pointer;
       backdrop-filter: blur(8px);
-      transition: background 0.2s, color 0.2s;
       letter-spacing: 0.01em;
     }
-    #tap-btn:hover { background: rgba(255, 255, 255, 0.2); color: #fff; }
-    #tap-btn:active { transform: translateX(-50%) scale(0.97); }
-    #tap-btn.done { pointer-events: none; color: rgba(255,255,255,0.4); }
+    #tap-btn.done {
+      color: rgba(255, 255, 255, 0.4);
+      background: rgba(255, 255, 255, 0.06);
+    }
     #overlay-text {
       position: fixed;
-      top: 25%;
+      top: 0;
       left: 50%;
-      transform: translate(-50%, -50%);
+      transform: translateX(-50%);
       z-index: 10;
       text-align: center;
       max-width: 500px;
+      padding-top: 8vh;
       pointer-events: none;
     }
     #copy-line {
-      font: 300 16px/1.5 -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font: 300 16px/1.5 'DM Sans', sans-serif;
       color: rgba(255, 255, 255, 0.7);
     }
     #count-line {
-      font: 300 13px/1.5 -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font: 300 13px/1.5 'DM Sans', sans-serif;
       color: rgba(255, 255, 255, 0.45);
       margin-top: 6px;
     }
@@ -84,6 +87,44 @@
       letter-spacing: 0.03em;
       display: none;
     }
+    #location-hint {
+      position: fixed;
+      bottom: 18px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 10;
+      font: 300 11px/1 'DM Sans', sans-serif;
+      color: rgba(255, 255, 255, 0.35);
+      display: none;
+    }
+    @media (max-width: 768px) {
+      body {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      #overlay-text {
+        position: relative;
+        top: auto;
+        left: auto;
+        transform: none;
+        order: 1;
+        max-width: 85vw;
+        padding: 60px 16px 12px;
+      }
+      #map {
+        width: 100%;
+        height: 55vh;
+        flex-shrink: 0;
+        order: 2;
+      }
+      #copy-line { font-size: 14px; }
+      #count-line { font-size: 12px; }
+      #tap-btn {
+        position: fixed;
+        bottom: 24px;
+      }
+    }
   </style>
 </head>
 <body>
@@ -98,6 +139,7 @@
   </div>
   <div id="preview-label">Showing a projection — not live data</div>
   <button id="tap-btn">I'm feeding right now</button>
+  <div id="location-hint">Enable location to add your dot</div>
   <script type="module" src="/main.js"></script>
 </body>
 </html>

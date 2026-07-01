@@ -1,7 +1,7 @@
 import mapboxgl from 'mapbox-gl';
 import { estimateFeedingCount } from './src/synthesis.js';
 import { generateCopy } from './src/copygen.js';
-import { saveTap, getTaps } from './src/supabase.js';
+import { saveTap, deleteTap, getTaps } from './src/supabase.js';
 import { previewTaps } from './src/previewdata.js';
 
 let currentMode = 'live';
@@ -32,8 +32,33 @@ const map = new mapboxgl.Map({
   projection: 'globe',
   center: [100, 20],
   zoom: 1.5,
-  interactive: false,
+  interactive: true,
+  dragRotate: true,
+  scrollZoom: true,
+  touchZoomRotate: true,
+  doubleClickZoom: false,
+  keyboard: false,
 });
+
+let rotating = true;
+let resumeTimer = null;
+
+function pauseRotation() {
+  rotating = false;
+  clearTimeout(resumeTimer);
+}
+
+function scheduleResume() {
+  clearTimeout(resumeTimer);
+  resumeTimer = setTimeout(() => { rotating = true; }, 2000);
+}
+
+map.on('mousedown', pauseRotation);
+map.on('touchstart', pauseRotation);
+map.on('wheel', pauseRotation);
+map.on('mouseup', scheduleResume);
+map.on('touchend', scheduleResume);
+map.on('wheel', scheduleResume);
 
 map.on('style.load', () => {
   map.setFog({
@@ -110,9 +135,11 @@ function normLng(lng) {
 }
 
 function rotate() {
-  const center = map.getCenter();
-  center.lng -= 0.03;
-  map.setCenter(center);
+  if (rotating) {
+    const center = map.getCenter();
+    center.lng -= 0.006;
+    map.setCenter(center);
+  }
   requestAnimationFrame(rotate);
 }
 
@@ -185,14 +212,20 @@ async function loadRecentTaps() {
 }
 
 function getUserLocation() {
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     if (!navigator.geolocation) {
-      resolve({ lat: 0, lng: 0 });
+      reject(new Error('Geolocation not supported'));
       return;
     }
     navigator.geolocation.getCurrentPosition(
-      (pos) => resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
-      () => resolve({ lat: 0, lng: 0 }),
+      (pos) => {
+        console.log('[geo] Raw result:', pos.coords.latitude, pos.coords.longitude, 'accuracy:', pos.coords.accuracy);
+        resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+      },
+      (err) => {
+        console.log('[geo] Denied or failed:', err.message);
+        reject(err);
+      },
       { timeout: 5000 }
     );
   });
@@ -208,16 +241,12 @@ function setupModeToggle() {
     liveBtn.classList.toggle('active', mode === 'live');
     previewBtn.classList.toggle('active', mode === 'preview');
     label.style.display = mode === 'preview' ? 'block' : 'none';
-    if (!mapLoaded) {
-      map.on('load', () => {
-        if (mode === 'preview') updateTapDots(previewTaps);
-        else loadRecentTaps();
-      });
-      return;
-    }
+    if (!mapLoaded) return;
     if (mode === 'preview') updateTapDots(previewTaps);
     else loadRecentTaps();
   }
+
+  applyMode('live');
 
   liveBtn.addEventListener('click', () => {
     if (currentMode !== 'live') applyMode('live');
@@ -230,23 +259,41 @@ function setupModeToggle() {
 
 function setupTaps() {
   const btn = document.getElementById('tap-btn');
+  const hint = document.getElementById('location-hint');
+  let activeTapId = null;
+
   btn.addEventListener('click', async () => {
-    btn.textContent = '...';
-    btn.classList.add('done');
-    try {
-      const loc = await getUserLocation();
-      const row = await saveTap(loc.lat, loc.lng);
-      console.log('[taps] Saved tap:', row);
-      await loadRecentTaps();
-      btn.textContent = 'you\'re not alone';
-      setTimeout(() => {
-        btn.textContent = 'I\'m feeding right now';
-        btn.classList.remove('done');
-      }, 2000);
-    } catch (err) {
-      console.error('[taps] Save error:', err);
+    if (!activeTapId) {
+      let loc;
+      try {
+        loc = await getUserLocation();
+      } catch {
+        hint.style.display = 'block';
+        return;
+      }
+      hint.style.display = 'none';
+      btn.textContent = 'I\'m done feeding';
+      btn.classList.add('done');
+      try {
+        const row = await saveTap(loc.lat, loc.lng);
+        console.log('[taps] Saved tap:', JSON.stringify(row));
+        activeTapId = row.id;
+        await loadRecentTaps();
+      } catch (err) {
+        console.error('[taps] Save error:', err);
+      }
+    } else {
       btn.textContent = 'I\'m feeding right now';
       btn.classList.remove('done');
+      try {
+        await deleteTap(activeTapId);
+        console.log('[taps] Deleted tap:', activeTapId);
+        activeTapId = null;
+        await loadRecentTaps();
+      } catch (err) {
+        console.error('[taps] Delete error:', err);
+        activeTapId = null;
+      }
     }
   });
 }

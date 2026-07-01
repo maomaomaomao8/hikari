@@ -15,6 +15,15 @@ export async function saveTap(lat, lng) {
   return data[0];
 }
 
+export async function deleteTap(id) {
+  const { error } = await supabase
+    .from('feeding_events')
+    .delete()
+    .eq('id', id);
+
+  if (error) throw new Error(`Supabase delete error: ${error.message}`);
+}
+
 export async function getTaps() {
   const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString();
 

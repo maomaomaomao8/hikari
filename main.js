@@ -350,3 +350,9 @@ function setupTaps() {
     }
   });
 }
+
+if (window.matchMedia('(max-width: 768px)').matches) {
+  setTimeout(() => {
+    document.getElementById('overlay-text').classList.add('faded');
+  }, 5000);
+}

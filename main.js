@@ -6,21 +6,34 @@ import { previewTaps } from './src/previewdata.js';
 
 let currentMode = 'live';
 
-(async () => {
-  try {
-    const now = new Date();
-    const count = await estimateFeedingCount(now);
-    console.log('[hikari] Estimated feeding count:', count);
+const FALLBACK_COPY = 'Around 80,000 parents are in this moment with you right now, feeding someone small.';
+const FALLBACK_COUNT = '~ 80,000 parents worldwide';
 
+document.getElementById('copy-line').textContent = FALLBACK_COPY;
+document.getElementById('count-line').textContent = FALLBACK_COUNT;
+
+(async () => {
+  const now = new Date();
+  const utcHour = now.getUTCHours();
+
+  const countPromise = estimateFeedingCount(now).then((count) => {
+    console.log('[hikari] Estimated feeding count:', count);
     document.getElementById('count-line').textContent =
       `~ ${count.toLocaleString('en-US')} parents worldwide`;
+    return count;
+  });
 
-    const utcHour = now.getUTCHours();
-    const sentence = await generateCopy(count, utcHour);
-    console.log('[copygen]', sentence);
-    document.getElementById('copy-line').textContent = sentence;
+  const copyPromise = countPromise.then((count) =>
+    generateCopy(count, utcHour).then((sentence) => {
+      console.log('[copygen]', sentence);
+      document.getElementById('copy-line').textContent = sentence;
+    })
+  );
+
+  try {
+    await Promise.all([countPromise, copyPromise]);
   } catch (err) {
-    console.error('[hikari] Error:', err);
+    console.error('[hikari] API error — using fallback text:', err);
   }
 })();
 
@@ -201,7 +214,47 @@ function updateTapDots(taps) {
   map.getSource('taps').setData(getTapGeoJSON(taps));
 }
 
+function setupUserDotLayer() {
+  if (map.getSource('user-dot')) return;
+
+  map.addSource('user-dot', {
+    type: 'geojson',
+    data: getTapGeoJSON([]),
+  });
+
+  map.addLayer({
+    id: 'user-dot-glow',
+    type: 'circle',
+    source: 'user-dot',
+    paint: {
+      'circle-radius': 14,
+      'circle-color': '#ffffff',
+      'circle-opacity': 0.12,
+      'circle-blur': 1,
+    },
+  });
+
+  map.addLayer({
+    id: 'user-dot-core',
+    type: 'circle',
+    source: 'user-dot',
+    paint: {
+      'circle-radius': 4,
+      'circle-color': '#ffffff',
+      'circle-opacity': 0.9,
+    },
+  });
+}
+
+function updateUserDot(loc) {
+  setupUserDotLayer();
+  map.getSource('user-dot').setData(
+    loc ? getTapGeoJSON([loc]) : getTapGeoJSON([])
+  );
+}
+
 async function loadRecentTaps() {
+  if (currentMode !== 'live') return;
   try {
     const taps = await getTaps();
     console.log('[taps] Loaded recent taps:', taps.length);
@@ -274,22 +327,22 @@ function setupTaps() {
       hint.style.display = 'none';
       btn.textContent = 'I\'m done feeding';
       btn.classList.add('done');
+      updateUserDot(loc);
       try {
         const row = await saveTap(loc.lat, loc.lng);
         console.log('[taps] Saved tap:', JSON.stringify(row));
         activeTapId = row.id;
-        await loadRecentTaps();
       } catch (err) {
         console.error('[taps] Save error:', err);
       }
     } else {
       btn.textContent = 'I\'m feeding right now';
       btn.classList.remove('done');
+      updateUserDot(null);
       try {
         await deleteTap(activeTapId);
         console.log('[taps] Deleted tap:', activeTapId);
         activeTapId = null;
-        await loadRecentTaps();
       } catch (err) {
         console.error('[taps] Delete error:', err);
         activeTapId = null;

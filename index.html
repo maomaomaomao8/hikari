@@ -33,13 +33,12 @@
     }
     #overlay-text {
       position: fixed;
-      top: 0;
+      top: 76px;
       left: 50%;
       transform: translateX(-50%);
       z-index: 10;
       text-align: center;
       max-width: 500px;
-      padding-top: 8vh;
       pointer-events: none;
     }
     #copy-line {
@@ -53,8 +52,9 @@
     }
     #mode-toggle {
       position: fixed;
-      top: 20px;
-      right: 20px;
+      top: 24px;
+      left: 50%;
+      transform: translateX(-50%);
       z-index: 10;
       display: flex;
       align-items: center;
@@ -79,12 +79,14 @@
     }
     #preview-label {
       position: fixed;
-      top: 52px;
-      right: 20px;
+      top: 56px;
+      left: 50%;
+      transform: translateX(-50%);
       z-index: 10;
       font: 600 11px/1 -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
       color: rgba(255, 180, 80, 0.9);
       letter-spacing: 0.03em;
+      white-space: nowrap;
       display: none;
     }
     #location-hint {
@@ -98,30 +100,16 @@
       display: none;
     }
     @media (max-width: 768px) {
-      body {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-      }
-      #overlay-text {
-        position: relative;
-        top: auto;
-        left: auto;
-        transform: none;
-        order: 1;
-        max-width: 85vw;
-        padding: 60px 16px 12px;
-      }
       #map {
         width: 100%;
-        height: 55vh;
-        flex-shrink: 0;
-        order: 2;
+        height: 100vh;
       }
-      #copy-line { font-size: 14px; }
-      #count-line { font-size: 12px; }
+      #overlay-text {
+        max-width: 85vw;
+      }
+      #copy-line { font-size: 16px; }
+      #count-line { font-size: 13px; }
       #tap-btn {
-        position: fixed;
         bottom: 24px;
       }
     }

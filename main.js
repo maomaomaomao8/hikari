@@ -8,10 +8,20 @@ let currentMode = 'live';
 let userLocation = null;
 
 const FALLBACK_COPY = 'Around 80,000 parents are in this moment with you right now, feeding someone small.';
-const FALLBACK_COUNT = '~ 80,000 parents worldwide';
 
-document.getElementById('copy-line').textContent = FALLBACK_COPY;
-document.getElementById('count-line').textContent = FALLBACK_COUNT;
+function setCopyText(text) {
+  const el = document.getElementById('copy-line');
+  if (window.matchMedia('(max-width: 768px)').matches && !document.getElementById('overlay-text').classList.contains('intro-done')) {
+    el.innerHTML = text.split(' ').map(w => `<span class="word">${w}</span>`).join(' ');
+    el.querySelectorAll('.word').forEach((span, i) => {
+      setTimeout(() => span.classList.add('visible'), i * 80);
+    });
+  } else {
+    el.textContent = text;
+  }
+}
+
+setCopyText(FALLBACK_COPY);
 
 (async () => {
   const now = new Date();
@@ -19,15 +29,13 @@ document.getElementById('count-line').textContent = FALLBACK_COUNT;
 
   const countPromise = estimateFeedingCount(now).then((count) => {
     console.log('[hikari] Estimated feeding count:', count);
-    document.getElementById('count-line').textContent =
-      `~ ${count.toLocaleString('en-US')} parents worldwide`;
     return count;
   });
 
   const copyPromise = countPromise.then((count) =>
     generateCopy(count, utcHour).then((sentence) => {
       console.log('[copygen]', sentence);
-      document.getElementById('copy-line').textContent = sentence;
+      setCopyText(sentence);
     })
   );
 
@@ -309,7 +317,9 @@ if (window.matchMedia('(max-width: 768px)').matches) {
   setTimeout(() => {
     document.getElementById('map').classList.add('revealed');
     document.getElementById('tap-btn').classList.add('revealed');
-    document.getElementById('overlay-text').classList.add('intro-done');
+    const overlay = document.getElementById('overlay-text');
+    overlay.classList.remove('faded');
+    overlay.classList.add('intro-done');
   }, 5000);
 }
 

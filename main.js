@@ -102,6 +102,15 @@ function rotate() {
     center.lng -= 0.006;
     map.setCenter(center);
   }
+  const pulse = 1.0 + 0.15 * Math.sin(Date.now() / 1000 * (2 * Math.PI / 3));
+  if (map.getLayer('taps-dot')) {
+    map.setPaintProperty('taps-dot', 'circle-radius', 3 * pulse);
+    map.setPaintProperty('taps-glow', 'circle-radius', 12 * pulse);
+  }
+  if (map.getLayer('user-dot-core')) {
+    map.setPaintProperty('user-dot-core', 'circle-radius', 4 * pulse);
+    map.setPaintProperty('user-dot-glow', 'circle-radius', 14 * pulse);
+  }
   requestAnimationFrame(rotate);
 }
 
@@ -377,6 +386,29 @@ function getLocalTime(lng) {
   return `${h12}:${String(m).padStart(2, '0')}${ampm}`;
 }
 
+function weatherEmoji(code) {
+  if (code === 0 || code === 1) return '☀️';
+  if (code === 2) return '⛅';
+  if (code === 3) return '☁️';
+  if (code === 45 || code === 48) return '🌫️';
+  if (code >= 51 && code <= 67) return '🌧️';
+  if (code >= 80 && code <= 82) return '🌧️';
+  if (code >= 71 && code <= 77) return '🌨️';
+  if (code >= 85 && code <= 86) return '🌨️';
+  if (code >= 95) return '⛈️';
+  return null;
+}
+
+async function fetchWeather(lat, lng) {
+  try {
+    const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current_weather=true`);
+    if (!res.ok) return null;
+    const data = await res.json();
+    if (data.current_weather) return weatherEmoji(data.current_weather.weathercode);
+  } catch {}
+  return null;
+}
+
 async function reverseGeocode(lng, lat) {
   try {
     const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json?access_token=${mapboxgl.accessToken}&types=place,country&limit=1`;
@@ -403,9 +435,15 @@ async function handleDotTap(point) {
   const projected = map.project([lng, lat]);
   const time = getLocalTime(lng);
   const timeout = new Promise((resolve) => setTimeout(() => resolve(null), 1000));
-  const place = await Promise.race([reverseGeocode(lng, lat), timeout]);
-  const label = place ? `${time} · ${place}` : time;
-  showTooltip(projected.x, projected.y, label);
+  const [place, weather] = await Promise.all([
+    Promise.race([reverseGeocode(lng, lat), timeout]),
+    Promise.race([fetchWeather(lat, lng), timeout]),
+  ]);
+  const parts = [];
+  if (place) parts.push(place);
+  if (weather) parts.push(weather);
+  parts.push(time);
+  showTooltip(projected.x, projected.y, parts.join(' · '));
 }
 
 map.on('click', (e) => { handleDotTap(e.point); });

@@ -16,7 +16,7 @@ function setCopyText(text) {
   if (window.matchMedia('(max-width: 768px)').matches) {
     el.innerHTML = text.split(' ').map(w => `<span class="word">${w}</span>`).join(' ');
     el.querySelectorAll('.word').forEach((span, i) => {
-      setTimeout(() => span.classList.add('visible'), i * 180);
+      setTimeout(() => span.classList.add('visible'), i * 200);
     });
   } else {
     el.textContent = text;

@@ -162,10 +162,9 @@
       }
       #copy-line .word {
         opacity: 0;
-        filter: blur(4px);
-        transition: opacity 0.4s ease, filter 0.4s ease;
+        transition: opacity 0.6s cubic-bezier(0.25, 0, 0.5, 1);
       }
-      #copy-line .word.visible { opacity: 1; filter: blur(0px); }
+      #copy-line .word.visible { opacity: 0.9; }
       #tap-btn {
         bottom: 24px;
         opacity: 0;

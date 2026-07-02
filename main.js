@@ -13,14 +13,10 @@ function setCopyText(text) {
   const el = document.getElementById('copy-line');
   const overlay = document.getElementById('overlay-text');
   if (overlay.style.display === 'none') return;
-  if (window.matchMedia('(max-width: 768px)').matches) {
-    el.innerHTML = text.split(' ').map(w => `<span class="word">${w}</span>`).join(' ');
-    el.querySelectorAll('.word').forEach((span, i) => {
-      setTimeout(() => span.classList.add('visible'), i * 200);
-    });
-  } else {
-    el.textContent = text;
-  }
+  el.innerHTML = text.split(' ').map(w => `<span class="word">${w}</span>`).join(' ');
+  el.querySelectorAll('.word').forEach((span, i) => {
+    setTimeout(() => span.classList.add('visible'), i * 200);
+  });
 }
 
 setCopyText(FALLBACK_COPY);
@@ -263,7 +259,7 @@ function setupModeToggle() {
     currentMode = mode;
     liveBtn.classList.toggle('active', mode === 'live');
     previewBtn.classList.toggle('active', mode === 'preview');
-    label.style.opacity = mode === 'preview' ? '1' : '0';
+    label.classList.toggle('revealed', mode === 'preview' && document.getElementById('overlay-text').style.display === 'none');
     if (!mapLoaded) return;
     if (mode === 'preview') updateTapDots(previewTaps);
     else loadRecentTaps();
@@ -341,18 +337,22 @@ if (isMobile) {
     ctx.fillStyle = `rgba(255,255,255,${Math.random() * 0.3 + 0.08})`;
     ctx.fill();
   }
-
-  setTimeout(() => {
-    document.getElementById('overlay-text').classList.add('faded');
-  }, 4000);
-  setTimeout(() => {
-    document.getElementById('overlay-text').style.display = 'none';
-    document.getElementById('map').classList.add('revealed');
-    document.getElementById('tap-btn').classList.add('revealed');
-    document.getElementById('mode-toggle').classList.add('revealed');
-    document.getElementById('preview-label').classList.add('revealed');
-  }, 5000);
 }
+
+const introWords = document.querySelectorAll('#copy-line .word');
+const textFullyVisible = introWords.length * 200 + 600;
+const fadeOutStart = textFullyVisible + 1500;
+
+setTimeout(() => {
+  document.getElementById('overlay-text').classList.add('faded');
+}, fadeOutStart);
+setTimeout(() => {
+  document.getElementById('overlay-text').style.display = 'none';
+  document.getElementById('map').classList.add('revealed');
+  document.getElementById('tap-btn').classList.add('revealed');
+  document.getElementById('mode-toggle').classList.add('revealed');
+  document.getElementById('preview-label').classList.add('revealed');
+}, fadeOutStart + 1000);
 
 let tooltipTimer = null;
 

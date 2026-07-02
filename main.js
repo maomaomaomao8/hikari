@@ -48,7 +48,7 @@ mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN;
 
 const map = new mapboxgl.Map({
   container: 'map',
-  style: 'mapbox://styles/mapbox/dark-v11',
+  style: 'mapbox://styles/maotsuki/cmr3uioqn002b01rd0szf97x9',
   projection: 'globe',
   center: [100, 20],
   zoom: 1.5,

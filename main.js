@@ -91,16 +91,9 @@ map.on('style.load', () => {
     color: 'rgb(20, 20, 30)',
     'high-color': 'rgb(40, 40, 80)',
     'horizon-blend': 0.08,
-    'space-color': isMobile ? 'rgba(0,0,0,0)' : '#0a0a0f',
+    'space-color': '#0a0a0f',
     'star-intensity': isMobile ? 0 : 0.4,
   });
-  if (isMobile) {
-    if (map.getLayer('background')) {
-      map.setPaintProperty('background', 'background-color', 'rgba(0,0,0,0)');
-    }
-    map.getCanvas().style.background = 'transparent';
-    map.getContainer().style.background = 'transparent';
-  }
 });
 
 function rotate() {

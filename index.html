@@ -125,7 +125,9 @@
         opacity: 0;
         transform: scale(0.6);
         transition: opacity 1s ease, transform 1.2s ease-out;
+        background: transparent !important;
       }
+      #map canvas.mapboxgl-canvas { background: transparent !important; }
       #map.revealed { opacity: 1; transform: scale(1); }
       #mode-toggle {
         top: 24px;

@@ -84,15 +84,16 @@ map.on('mouseup', scheduleResume);
 map.on('touchend', scheduleResume);
 map.on('wheel', scheduleResume);
 
+const isMobile = window.matchMedia('(max-width: 768px)').matches;
+
 map.on('style.load', () => {
   map.setFog({
     color: 'rgb(20, 20, 30)',
     'high-color': 'rgb(40, 40, 80)',
     'horizon-blend': 0.08,
-    'space-color': '#0a0a0f',
-    'star-intensity': 0.4,
+    'space-color': isMobile ? 'rgba(0,0,0,0)' : '#0a0a0f',
+    'star-intensity': isMobile ? 0 : 0.4,
   });
-
 });
 
 function rotate() {
@@ -312,7 +313,7 @@ function setupTaps() {
   });
 }
 
-if (window.matchMedia('(max-width: 768px)').matches) {
+if (isMobile) {
   const c = document.getElementById('stars');
   c.style.display = 'block';
   const dpr = window.devicePixelRatio || 1;

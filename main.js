@@ -145,6 +145,17 @@ function setupTapLayer() {
       'circle-opacity': 0.7,
     },
   });
+
+  map.addLayer({
+    id: 'taps-hit',
+    type: 'circle',
+    source: 'taps',
+    paint: {
+      'circle-radius': 20,
+      'circle-color': '#ffffff',
+      'circle-opacity': 0,
+    },
+  });
 }
 
 function updateTapDots(taps) {
@@ -347,21 +358,30 @@ async function reverseGeocode(lng, lat) {
   return null;
 }
 
-map.on('mouseenter', 'taps-dot', () => { map.getCanvas().style.cursor = 'pointer'; });
-map.on('mouseleave', 'taps-dot', () => { map.getCanvas().style.cursor = ''; });
+map.on('mouseenter', 'taps-hit', () => { map.getCanvas().style.cursor = 'pointer'; });
+map.on('mouseleave', 'taps-hit', () => { map.getCanvas().style.cursor = ''; });
 
-map.on('click', 'taps-dot', async (e) => {
-  if (!e.features || !e.features.length) return;
-  const [lng, lat] = e.features[0].geometry.coordinates;
+async function handleDotTap(point) {
+  const features = map.queryRenderedFeatures(point, { layers: ['taps-hit'] });
+  if (!features.length) { hideTooltip(); return; }
+  const [lng, lat] = features[0].geometry.coordinates;
   if (isUserDot(lng, lat)) return;
-  const point = map.project([lng, lat]);
+  const projected = map.project([lng, lat]);
   const time = getLocalTime(lng);
-  showTooltip(point.x, point.y, `${time} · ...`);
+  showTooltip(projected.x, projected.y, `${time} · ...`);
   const place = await reverseGeocode(lng, lat);
-  if (place) showTooltip(point.x, point.y, `${time} · ${place}`);
-});
+  if (place) showTooltip(projected.x, projected.y, `${time} · ${place}`);
+}
 
-map.on('click', (e) => {
-  const features = map.queryRenderedFeatures(e.point, { layers: ['taps-dot'] });
-  if (!features.length) hideTooltip();
+map.on('click', (e) => { handleDotTap(e.point); });
+
+map.getCanvas().addEventListener('touchend', (e) => {
+  if (e.changedTouches.length === 0) return;
+  const touch = e.changedTouches[0];
+  const rect = map.getCanvas().getBoundingClientRect();
+  const point = new mapboxgl.Point(
+    touch.clientX - rect.left,
+    touch.clientY - rect.top
+  );
+  handleDotTap(point);
 });

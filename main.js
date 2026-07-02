@@ -7,7 +7,7 @@ import { previewTaps } from './src/previewdata.js';
 let currentMode = 'live';
 let userLocation = null;
 
-const FALLBACK_COPY = 'Around 80,000 parents are in this moment with you right now, feeding someone small.';
+const FALLBACK_COPY = 'Around 80,000 parents are holding their baby in this exact moment, just like you.';
 
 function setCopyText(text) {
   const el = document.getElementById('copy-line');
@@ -291,7 +291,7 @@ function setupTaps() {
         return;
       }
       hint.style.display = 'none';
-      btn.textContent = 'I\'m done feeding';
+      btn.textContent = 'My light is on';
       btn.classList.add('done');
       userLocation = loc;
       updateUserDot(loc);
@@ -303,7 +303,7 @@ function setupTaps() {
         console.error('[taps] Save error:', err);
       }
     } else {
-      btn.textContent = 'I\'m feeding right now';
+      btn.textContent = 'Add my light';
       btn.classList.remove('done');
       userLocation = null;
       updateUserDot(null);

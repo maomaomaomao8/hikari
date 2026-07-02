@@ -11,10 +11,12 @@ const FALLBACK_COPY = 'Around 80,000 parents are in this moment with you right n
 
 function setCopyText(text) {
   const el = document.getElementById('copy-line');
-  if (window.matchMedia('(max-width: 768px)').matches && !document.getElementById('overlay-text').classList.contains('intro-done')) {
+  const overlay = document.getElementById('overlay-text');
+  if (overlay.style.display === 'none') return;
+  if (window.matchMedia('(max-width: 768px)').matches) {
     el.innerHTML = text.split(' ').map(w => `<span class="word">${w}</span>`).join(' ');
     el.querySelectorAll('.word').forEach((span, i) => {
-      setTimeout(() => span.classList.add('visible'), i * 80);
+      setTimeout(() => span.classList.add('visible'), i * 180);
     });
   } else {
     el.textContent = text;
@@ -311,15 +313,31 @@ function setupTaps() {
 }
 
 if (window.matchMedia('(max-width: 768px)').matches) {
+  const c = document.getElementById('stars');
+  c.style.display = 'block';
+  const dpr = window.devicePixelRatio || 1;
+  c.width = window.innerWidth * dpr;
+  c.height = window.innerHeight * dpr;
+  const ctx = c.getContext('2d');
+  for (let i = 0; i < 180; i++) {
+    ctx.beginPath();
+    ctx.arc(
+      Math.random() * c.width,
+      Math.random() * c.height,
+      (Math.random() * 1.2 + 0.4) * dpr,
+      0, Math.PI * 2
+    );
+    ctx.fillStyle = `rgba(255,255,255,${Math.random() * 0.3 + 0.08})`;
+    ctx.fill();
+  }
+
   setTimeout(() => {
     document.getElementById('overlay-text').classList.add('faded');
   }, 4000);
   setTimeout(() => {
+    document.getElementById('overlay-text').style.display = 'none';
     document.getElementById('map').classList.add('revealed');
     document.getElementById('tap-btn').classList.add('revealed');
-    const overlay = document.getElementById('overlay-text');
-    overlay.classList.remove('faded');
-    overlay.classList.add('intro-done');
   }, 5000);
 }
 

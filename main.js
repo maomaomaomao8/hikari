@@ -268,7 +268,7 @@ function setupModeToggle() {
     else loadRecentTaps();
   }
 
-  applyMode('live');
+  applyMode('preview');
 
   liveBtn.addEventListener('click', () => {
     if (currentMode !== 'live') applyMode('live');

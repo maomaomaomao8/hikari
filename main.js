@@ -238,11 +238,21 @@ function setupModeToggle() {
   const previewBtn = document.getElementById('mode-preview');
   const label = document.getElementById('preview-label');
 
+  const overlay = document.getElementById('overlay-text');
+  const isMobile = window.matchMedia('(max-width: 768px)').matches;
+  const defaultTop = isMobile ? 80 : 88;
+
   function applyMode(mode) {
     currentMode = mode;
     liveBtn.classList.toggle('active', mode === 'live');
     previewBtn.classList.toggle('active', mode === 'preview');
     label.style.display = mode === 'preview' ? 'block' : 'none';
+    if (mode === 'preview') {
+      const labelBottom = label.getBoundingClientRect().bottom;
+      overlay.style.top = `${labelBottom + 12}px`;
+    } else {
+      overlay.style.top = `${defaultTop}px`;
+    }
     if (!mapLoaded) return;
     if (mode === 'preview') updateTapDots(previewTaps);
     else loadRecentTaps();
@@ -368,9 +378,10 @@ async function handleDotTap(point) {
   if (isUserDot(lng, lat)) return;
   const projected = map.project([lng, lat]);
   const time = getLocalTime(lng);
-  showTooltip(projected.x, projected.y, `${time} · ...`);
-  const place = await reverseGeocode(lng, lat);
-  if (place) showTooltip(projected.x, projected.y, `${time} · ${place}`);
+  const timeout = new Promise((resolve) => setTimeout(() => resolve(null), 1000));
+  const place = await Promise.race([reverseGeocode(lng, lat), timeout]);
+  const label = place ? `${time} · ${place}` : time;
+  showTooltip(projected.x, projected.y, label);
 }
 
 map.on('click', (e) => { handleDotTap(e.point); });

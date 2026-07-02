@@ -238,21 +238,11 @@ function setupModeToggle() {
   const previewBtn = document.getElementById('mode-preview');
   const label = document.getElementById('preview-label');
 
-  const overlay = document.getElementById('overlay-text');
-  const isMobile = window.matchMedia('(max-width: 768px)').matches;
-  const defaultTop = isMobile ? 80 : 88;
-
   function applyMode(mode) {
     currentMode = mode;
     liveBtn.classList.toggle('active', mode === 'live');
     previewBtn.classList.toggle('active', mode === 'preview');
-    label.style.display = mode === 'preview' ? 'block' : 'none';
-    if (mode === 'preview') {
-      const labelBottom = label.getBoundingClientRect().bottom;
-      overlay.style.top = `${labelBottom + 12}px`;
-    } else {
-      overlay.style.top = `${defaultTop}px`;
-    }
+    label.style.opacity = mode === 'preview' ? '1' : '0';
     if (!mapLoaded) return;
     if (mode === 'preview') updateTapDots(previewTaps);
     else loadRecentTaps();

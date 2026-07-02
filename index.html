@@ -33,7 +33,7 @@
     }
     #overlay-text {
       position: fixed;
-      top: 88px;
+      top: 104px;
       left: 50%;
       transform: translateX(-50%);
       z-index: 10;
@@ -89,7 +89,8 @@
       letter-spacing: 0.03em;
       text-align: right;
       white-space: nowrap;
-      display: none;
+      opacity: 0;
+      transition: opacity 0.2s ease;
     }
     #location-hint {
       position: fixed;
@@ -135,7 +136,7 @@
         text-align: center;
       }
       #overlay-text {
-        top: 80px;
+        top: 96px;
         padding: 0 16px;
       }
       #overlay-text.faded {

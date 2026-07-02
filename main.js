@@ -305,6 +305,11 @@ function setupTaps() {
 if (window.matchMedia('(max-width: 768px)').matches) {
   setTimeout(() => {
     document.getElementById('overlay-text').classList.add('faded');
+  }, 4000);
+  setTimeout(() => {
+    document.getElementById('map').classList.add('revealed');
+    document.getElementById('tap-btn').classList.add('revealed');
+    document.getElementById('overlay-text').classList.add('intro-done');
   }, 5000);
 }
 

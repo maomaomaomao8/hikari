@@ -94,6 +94,13 @@ map.on('style.load', () => {
     'space-color': isMobile ? 'rgba(0,0,0,0)' : '#0a0a0f',
     'star-intensity': isMobile ? 0 : 0.4,
   });
+  if (isMobile) {
+    if (map.getLayer('background')) {
+      map.setPaintProperty('background', 'background-color', 'rgba(0,0,0,0)');
+    }
+    map.getCanvas().style.background = 'transparent';
+    map.getContainer().style.background = 'transparent';
+  }
 });
 
 function rotate() {
@@ -363,9 +370,21 @@ function showTooltip(x, y, text) {
   hideTooltip();
   const el = document.getElementById('dot-tooltip');
   el.textContent = text;
-  el.style.left = `${x}px`;
-  el.style.top = `${y - 40}px`;
+  el.style.left = '0px';
+  el.style.top = '0px';
   el.classList.add('visible');
+  const rect = el.getBoundingClientRect();
+  const margin = 16;
+  const vw = window.innerWidth;
+  const vh = window.innerHeight;
+  let left = x - rect.width / 2;
+  let top = y - 40;
+  if (left + rect.width > vw - margin) left = vw - margin - rect.width;
+  if (left < margin) left = margin;
+  if (top < margin) top = y + 20;
+  if (top + rect.height > vh - margin) top = vh - margin - rect.height;
+  el.style.left = `${left}px`;
+  el.style.top = `${top}px`;
   tooltipTimer = setTimeout(hideTooltip, 3000);
 }
 

@@ -5,6 +5,7 @@ import { saveTap, deleteTap, getTaps } from './src/supabase.js';
 import { previewTaps } from './src/previewdata.js';
 
 let currentMode = 'live';
+let userLocation = null;
 
 const FALLBACK_COPY = 'Around 80,000 parents are in this moment with you right now, feeding someone small.';
 const FALLBACK_COUNT = '~ 80,000 parents worldwide';
@@ -264,6 +265,7 @@ function setupTaps() {
       hint.style.display = 'none';
       btn.textContent = 'I\'m done feeding';
       btn.classList.add('done');
+      userLocation = loc;
       updateUserDot(loc);
       try {
         const row = await saveTap(loc.lat, loc.lng);
@@ -275,6 +277,7 @@ function setupTaps() {
     } else {
       btn.textContent = 'I\'m feeding right now';
       btn.classList.remove('done');
+      userLocation = null;
       updateUserDot(null);
       try {
         await deleteTap(activeTapId);
@@ -293,3 +296,72 @@ if (window.matchMedia('(max-width: 768px)').matches) {
     document.getElementById('overlay-text').classList.add('faded');
   }, 5000);
 }
+
+let tooltipTimer = null;
+
+function hideTooltip() {
+  const el = document.getElementById('dot-tooltip');
+  el.classList.remove('visible');
+  clearTimeout(tooltipTimer);
+}
+
+function showTooltip(x, y, text) {
+  hideTooltip();
+  const el = document.getElementById('dot-tooltip');
+  el.textContent = text;
+  el.style.left = `${x}px`;
+  el.style.top = `${y - 40}px`;
+  el.classList.add('visible');
+  tooltipTimer = setTimeout(hideTooltip, 3000);
+}
+
+function isUserDot(lng, lat) {
+  if (!userLocation) return false;
+  return Math.abs(lng - userLocation.lng) < 0.01 && Math.abs(lat - userLocation.lat) < 0.01;
+}
+
+function getLocalTime(lng) {
+  const now = new Date();
+  const offsetHours = Math.round(lng / 15);
+  const localMs = now.getTime() + offsetHours * 3600000 + now.getTimezoneOffset() * 60000;
+  const local = new Date(localMs);
+  const h = local.getHours();
+  const m = local.getMinutes();
+  const ampm = h >= 12 ? 'pm' : 'am';
+  const h12 = h % 12 || 12;
+  return `${h12}:${String(m).padStart(2, '0')}${ampm}`;
+}
+
+async function reverseGeocode(lng, lat) {
+  try {
+    const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json?access_token=${mapboxgl.accessToken}&types=place,country&limit=1`;
+    const res = await fetch(url);
+    if (!res.ok) return null;
+    const data = await res.json();
+    if (data.features && data.features.length > 0) {
+      const parts = data.features[0].place_name.split(', ');
+      if (parts.length >= 2) return `${parts[0]}, ${parts[parts.length - 1]}`;
+      return parts[0];
+    }
+  } catch {}
+  return null;
+}
+
+map.on('mouseenter', 'taps-dot', () => { map.getCanvas().style.cursor = 'pointer'; });
+map.on('mouseleave', 'taps-dot', () => { map.getCanvas().style.cursor = ''; });
+
+map.on('click', 'taps-dot', async (e) => {
+  if (!e.features || !e.features.length) return;
+  const [lng, lat] = e.features[0].geometry.coordinates;
+  if (isUserDot(lng, lat)) return;
+  const point = map.project([lng, lat]);
+  const time = getLocalTime(lng);
+  showTooltip(point.x, point.y, `${time} · ...`);
+  const place = await reverseGeocode(lng, lat);
+  if (place) showTooltip(point.x, point.y, `${time} · ${place}`);
+});
+
+map.on('click', (e) => {
+  const features = map.queryRenderedFeatures(e.point, { layers: ['taps-dot'] });
+  if (!features.length) hideTooltip();
+});

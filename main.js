@@ -120,7 +120,8 @@ map.on('load', () => {
   mapLoaded = true;
   rotate();
   setupTaps();
-  loadRecentTaps();
+  if (currentMode === 'preview') updateTapDots(previewTaps);
+  else loadRecentTaps();
 });
 
 setupModeToggle();
@@ -348,6 +349,8 @@ if (isMobile) {
     document.getElementById('overlay-text').style.display = 'none';
     document.getElementById('map').classList.add('revealed');
     document.getElementById('tap-btn').classList.add('revealed');
+    document.getElementById('mode-toggle').classList.add('revealed');
+    document.getElementById('preview-label').classList.add('revealed');
   }, 5000);
 }
 

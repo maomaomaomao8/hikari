@@ -134,6 +134,71 @@
       white-space: nowrap;
     }
     #dot-tooltip.visible { opacity: 1; }
+    #note-btn {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      z-index: 10;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: none;
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(8px);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.5s ease;
+    }
+    #note-btn.revealed { opacity: 1; pointer-events: auto; }
+    #note-btn svg { width: 16px; height: 16px; }
+    #about-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+    #about-modal.open { display: flex; }
+    #about-backdrop {
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.7);
+    }
+    #about-content {
+      position: relative;
+      background: #0D1117;
+      border-radius: 16px;
+      padding: 32px;
+      max-width: 480px;
+      width: 90vw;
+    }
+    #about-close {
+      position: absolute;
+      top: 16px;
+      right: 20px;
+      background: none;
+      border: none;
+      color: rgba(255, 255, 255, 0.4);
+      font-size: 18px;
+      cursor: pointer;
+      line-height: 1;
+    }
+    #about-content h2 {
+      font: 500 20px/1 'DM Sans', sans-serif;
+      color: #ffffff;
+      margin-bottom: 20px;
+    }
+    #about-content p {
+      font: 400 15px/1.7 'DM Sans', sans-serif;
+      color: rgba(255, 255, 255, 0.75);
+      margin-bottom: 16px;
+    }
+    #about-content p:last-child { margin-bottom: 0; }
     #stars { display: none; }
     @media (max-width: 768px) {
       #map { height: 100vh; z-index: 2; }
@@ -167,6 +232,25 @@
   <div id="map"></div>
   <div id="overlay-text">
     <div id="copy-line"></div>
+  </div>
+  <button id="note-btn" aria-label="About Hikari">
+    <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+      <polyline points="14 2 14 8 20 8"/>
+      <line x1="16" y1="13" x2="8" y2="13"/>
+      <line x1="16" y1="17" x2="8" y2="17"/>
+      <line x1="10" y1="9" x2="8" y2="9"/>
+    </svg>
+  </button>
+  <div id="about-modal">
+    <div id="about-backdrop"></div>
+    <div id="about-content">
+      <button id="about-close">✕</button>
+      <h2>Hikari 光</h2>
+      <p>When my son Juli was a newborn, I spent countless nights awake feeding him alone in the dark. The silence felt heavy — like the rest of the world had disappeared and I was the only one still awake.</p>
+      <p>Then I'd watch the sunrise and feel something shift. The night was ending. I had made it through.</p>
+      <p>Hikari came from that feeling. I wanted to build something that shows you — in that exact moment — that you are not alone. Somewhere in the world, another parent is awake with their baby too. In Tokyo it might be evening. In London it might be midnight. But somewhere, it is always now.</p>
+    </div>
   </div>
   <div id="mode-toggle">
     <button id="mode-live" class="active">Live</button>

@@ -352,7 +352,13 @@ setTimeout(() => {
   document.getElementById('tap-btn').classList.add('revealed');
   document.getElementById('mode-toggle').classList.add('revealed');
   document.getElementById('preview-label').classList.add('revealed');
+  document.getElementById('note-btn').classList.add('revealed');
 }, fadeOutStart + 1000);
+
+const aboutModal = document.getElementById('about-modal');
+document.getElementById('note-btn').addEventListener('click', () => aboutModal.classList.add('open'));
+document.getElementById('about-close').addEventListener('click', () => aboutModal.classList.remove('open'));
+aboutModal.addEventListener('click', (e) => { if (!document.getElementById('about-content').contains(e.target)) aboutModal.classList.remove('open'); });
 
 let tooltipTimer = null;
 
